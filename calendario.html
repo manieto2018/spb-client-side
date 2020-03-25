@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+
+<head>
+    <!-- Add meta tags for mobile and IE -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Include the PayPal JavaScript SDK -->
+    <script src="https://www.paypal.com/sdk/js?currency=USD&client-id=sb"></script>
+
+    <style>
+        /* Media query for mobile viewport */
+        @media screen and (max-width: 400px) {
+            #paypal-button-container {
+                width: 100%;
+            }
+        }
+        
+        /* Media query for desktop viewport */
+        @media screen and (min-width: 400px) {
+            #paypal-button-container {
+                width: 250px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+  Boleto para Show  
+  <div class="dropdown" >
+            <select id="op" class="dropbtn" onclick="Select(this.value)">
+                <option value="Option 0">Show $40.00 USD</option> 
+                <option value="Option 1">Show + Cena $70.00 USD</option>
+                
+            </select>
+    </div>
+    <input type="hidden" id="Option 0" name="show" value="40"> 
+    <input type="hidden" id="Option 1" name="show + cena" value="70">
+
+    <br>
+    Número de personas: <input onchange="Select(document.getElementById('op').value)" type="number" name="quantity" id="qty" min="1" max="10" value="1"> <br>
+   
+    <br>
+    Confirme una fecha:
+    <input type="text" id="fecha" placeholder="escriba su fecha" value="" margin="10px"> USD <!--Cambio de moneda-->
+    <script src="https://www.paypalobjects.com/api/checkout.js"></script>
+    <p>
+      <label><input id="check" type="checkbox"> Acepto términos y condiciones</label>
+    </p>
+
+    <div id="paypal-button-container"></div>
+
+    <script>
+
+      var x; //opción del menú seleccionada
+        var v; //precio del producto
+        var d; //descripción del producto
+        var y; //cantidad
+        var t = "Sigue intentando";
+
+        function Select(x) {
+
+            console.log(x);
+
+            switch (x){
+
+                case "Option 0":
+                v = parseFloat(document.getElementById("Option 0").value);
+                d = document.getElementById("Option 0").name + " x " + document.getElementById("qty").value + " personas";
+                y = parseFloat(document.getElementById("qty").value) * v;
+                
+                break;
+
+                case "Option 1":
+                v = parseFloat(document.getElementById("Option 1").value);
+                d = document.getElementById("Option 1").name + " x " + document.getElementById("qty").value + " personas";
+                y =  parseFloat(document.getElementById("qty").value) * v;
+                
+                break;
+
+                default:
+                console.log(t);
+
+            }
+
+          }
+
+       function isValid() {
+        return document.querySelector('#check').checked;
+    }   
+    function onChangeCheckbox(handler) {
+        document.querySelector('#check').addEventListener('change', handler);
+    }
+
+    // function toggleValidationMessage() {
+    //     document.querySelector('#msg').style.display = (isValid() ? 'none' : 'block');
+    // }
+
+    function toggleButton(actions) {
+        return isValid() ? actions.enable() : actions.disable();
+    }
+
+
+
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+
+          validate: function(actions) {
+            toggleButton(actions);
+
+            onChangeCheckbox(function() {
+                toggleButton(actions);
+            });
+        },
+
+        // onClick: function() {
+        //     toggleValidationMessage();
+        // },
+        
+
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                        purchase_units: [{
+                        description: "Un boleto para "+ d+ " " + document.getElementById("fecha").value, //Agregue una descripción del producto a pagar
+                        amount: {
+                            value: y,
+                            currency: "USD" //monto a pagar
+                        }
+                    }],
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    // Show a success message to the buyer
+                    alert('Thank you. Transaction completed by ' + details.payer.name.given_name + '!');
+                });
+            }
+
+        }).render('#paypal-button-container');
+     
+    </script>
+</body>
+    
