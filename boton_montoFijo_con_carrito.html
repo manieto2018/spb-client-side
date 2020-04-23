@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+
+<head>
+    <!-- Add meta tags for mobile and IE -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Include the PayPal JavaScript SDK -->
+    <script src="https://www.paypal.com/sdk/js?currency=MXN&client-id=sb"></script>
+
+
+     <style>
+        /* Media query for mobile viewport */
+        @media screen and (max-width: 400px) {
+            #paypal-button-container {
+                width: 100%;
+            }
+        }
+        
+        /* Media query for desktop viewport */
+        @media screen and (min-width: 400px) {
+            #paypal-button-container {
+                width: 250px;
+            }
+        }
+    </style>
+
+
+</head>
+
+<body>
+    Precio: <input type="text" id="desc" placeholder="$100.00 USD" value="" margin="5px" size="20" disabled> <br> <br>
+    Cantidad: <input onclick="Select(this.value)" type="number" name="quantity" id="qty" min="1" max="10" value="1"> <br> <br>
+
+    <div id="paypal-button-container" ></div>
+
+    
+
+    <script>
+        
+        var x; //cantidad 
+        var precioFinal; //cantidad multiplicada por el precio fijo
+
+
+        function Select(x){
+            console.log(x);
+            x = parseFloat(document.getElementById('qty').value);
+            precioFinal = 100 * x;
+            return precioFinal;
+        }
+
+        console.log(precioFinal);
+
+        // Render the PayPal button into #paypal-button-container
+        paypal.Buttons({
+            style: {
+                size: 'small'
+            },
+
+           
+
+
+            // Set up the transaction
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        description: "Banquet: Costo total de " + precioFinal + " USD" , //Agregue una descripción del producto a pagar
+                        amount: {
+                            value: precioFinal,//monto a pagar 
+                        }
+                    }]
+                });
+            },
+
+            // Finalize the transaction
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    // Show a success message to the buyer
+                    alert('Thank you. Transaction completed by ' + details.payer.name.given_name + '!');
+                });
+            }
+
+        }).render('#paypal-button-container');
+     
+    </script>
+</body>
+    
